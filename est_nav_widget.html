@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --qld-navy: #1a3a5c;
+    --qld-blue: #1e5fa8;
+    --qld-mid: #2d7dd2;
+    --qld-light: #e8f1fb;
+    --qld-accent: #f0a500;
+    --border: #d0dcea;
+    --text: #1c2b3a;
+    --muted: #5a7090;
+    --bg: #f4f7fb;
+    --white: #ffffff;
+    --radius: 8px;
+    --shadow: 0 2px 8px rgba(26,58,92,0.10);
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    padding: 0;
+    min-height: 100vh;
+  }
+
+  .widget {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 16px;
+  }
+
+  /* Header bar */
+  .widget-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding: 12px 16px;
+    background: var(--qld-navy);
+    border-radius: var(--radius);
+    color: white;
+  }
+  .widget-header .logo {
+    width: 32px; height: 32px;
+    background: var(--qld-accent);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 13px; color: var(--qld-navy); flex-shrink: 0;
+  }
+  .widget-header h1 {
+    font-size: 15px; font-weight: 600; letter-spacing: 0.01em;
+  }
+  .widget-header p {
+    font-size: 12px; opacity: 0.7; margin-top: 1px;
+  }
+
+  /* Tab strip */
+  .tab-strip {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 12px;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 4px;
+    flex-wrap: wrap;
+  }
+
+  .tab-btn {
+    flex: 1; min-width: 120px;
+    padding: 8px 12px;
+    border: none;
+    background: transparent;
+    border-radius: 6px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-align: center;
+    white-space: nowrap;
+  }
+  .tab-btn:hover { background: var(--qld-light); color: var(--qld-blue); }
+  .tab-btn.active {
+    background: var(--qld-navy);
+    color: white;
+    font-weight: 600;
+  }
+
+  /* Tab panels */
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* Section / accordion */
+  .section {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 8px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 11px 14px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.12s;
+    gap: 8px;
+  }
+  .section-header:hover { background: var(--qld-light); }
+  .section-header.top-link {
+    cursor: default;
+  }
+  .section-header.top-link:hover { background: var(--white); }
+
+  .section-title {
+    display: flex; align-items: center; gap: 8px;
+    font-weight: 600; font-size: 13.5px; color: var(--qld-navy);
+    text-decoration: none;
+  }
+  .section-title:hover { color: var(--qld-mid); }
+  .section-title .icon {
+    width: 20px; height: 20px; flex-shrink: 0;
+    background: var(--qld-light);
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+  }
+
+  .chevron {
+    width: 18px; height: 18px; flex-shrink: 0;
+    color: var(--muted);
+    transition: transform 0.2s ease;
+  }
+  .section.open .chevron { transform: rotate(180deg); }
+
+  .section-body {
+    display: none;
+    border-top: 1px solid var(--border);
+    background: #fafcff;
+    padding: 4px 0;
+  }
+  .section.open .section-body { display: block; }
+
+  /* Links inside sections */
+  .link-group { padding: 4px 14px 4px 14px; }
+  .link-group-label {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--muted);
+    padding: 8px 0 4px 26px;
+  }
+
+  .nav-link {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 8px 6px 26px;
+    color: var(--qld-blue);
+    text-decoration: none;
+    font-size: 13px;
+    border-radius: 5px;
+    transition: background 0.1s, color 0.1s;
+    line-height: 1.35;
+  }
+  .nav-link:hover { background: var(--qld-light); color: var(--qld-navy); }
+  .nav-link::before {
+    content: '';
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--qld-mid);
+    flex-shrink: 0;
+    margin-left: -13px;
+  }
+
+  .nav-link.sub {
+    padding-left: 42px; font-size: 12.5px; color: var(--muted);
+  }
+  .nav-link.sub:hover { color: var(--qld-navy); }
+  .nav-link.sub::before { background: var(--border); width: 4px; height: 4px; margin-left: -13px; }
+
+  /* Standalone link rows (no accordion) */
+  .standalone-link {
+    display: flex; align-items: center; gap: 10px;
+    padding: 11px 14px;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 8px;
+    color: var(--qld-blue);
+    text-decoration: none;
+    font-size: 13.5px; font-weight: 600;
+    box-shadow: var(--shadow);
+    transition: background 0.12s, color 0.12s;
+  }
+  .standalone-link:hover { background: var(--qld-light); color: var(--qld-navy); }
+  .standalone-link .icon { font-size: 14px; }
+
+  /* 2-col grid for dense link lists */
+  .link-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px 8px;
+    padding: 4px 14px 8px 14px;
+  }
+  .link-grid .nav-link { padding-left: 22px; }
+  .link-grid .nav-link::before { margin-left: -13px; }
+
+  @media (max-width: 600px) {
+    .link-grid { grid-template-columns: 1fr; }
+    .tab-btn { min-width: 0; font-size: 12px; padding: 7px 8px; }
+  }
+
+  hr.divider { border: none; border-top: 1px solid var(--border); margin: 4px 14px; }
+</style>
+</head>
+<body>
+<div class="widget">
+
+  <div class="widget-header">
+    <div class="logo">EST</div>
+    <div>
+      <h1>EST Knowledge & Processes — Quick Navigation</h1>
+      <p>National Fire Ant Eradication Program · Contact Centre Reference</p>
+    </div>
+  </div>
+
+  <!-- TAB STRIP -->
+  <div class="tab-strip">
+    <button class="tab-btn active" onclick="switchTab('treatment', this)">🧪 Treatment Info</button>
+    <button class="tab-btn" onclick="switchTab('complaints', this)">📋 Complaints</button>
+    <button class="tab-btn" onclick="switchTab('processes', this)">⚙️ EST Processes</button>
+    <button class="tab-btn" onclick="switchTab('workbooks', this)">📁 Workbooks</button>
+  </div>
+
+  <!-- ===== TAB: TREATMENT ===== -->
+  <div id="tab-treatment" class="tab-panel active">
+
+    <!-- All Locations -->
+    <div class="section">
+      <div class="section-header" onclick="toggleSection(this)">
+        <span class="section-title"><span class="icon">📍</span>All Locations</span>
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="section-body">
+        <div class="link-group">
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Treatment%20Information.aspx#all-locations-1" target="_blank">Daily Locations Documents / Daily Team Tasking</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/:x:/r/sites/SPOBQ/Teams/NRIFAEP/Community%20Engagement/Projects/Eradication%20Support%20Team/KAPS%20SharePoint/Operations%20Directory/Operations_Directory_Contact_Centre_Use_Active_042026.xlsx?d=wce5fddde3ee5423abd4f701a47cd9068&csf=1&web=1&e=GGfURE" target="_blank">EST Operations Directory Contact List</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Treatment%20Information.aspx#aerial-ops-locations" target="_blank">Aerial Ops Locations</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Treatment%20Information.aspx#aerial-ops-next-week-schedule" target="_blank">Aerial Ops Next Week Schedule</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Treatment%20Information.aspx#aerial-fast-locations" target="_blank">Aerial FAST Locations</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Treatment%20Information.aspx#aerial-fast-next-week-schedule" target="_blank">Aerial FAST Next Week Schedule</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Updates standalone -->
+    <a class="standalone-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Treatment%20Information.aspx#est-updates-1" target="_blank">
+      <span class="icon">📢</span> EST Updates / Toolbox Talks / Depot Meetings
+    </a>
+
+    <!-- General Treatment Info -->
+    <div class="section">
+      <div class="section-header" onclick="toggleSection(this)">
+        <span class="section-title"><span class="icon">ℹ️</span>General Treatment Information</span>
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="section-body">
+        <div class="link-grid">
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Treatment%20Information.aspx#chemical-sensitivity" target="_blank">Chemical Sensitivity</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Treatment%20Information.aspx#treatment-zones" target="_blank">Treatment Zones</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Treatment%20Information.aspx#treatment-types" target="_blank">Treatment Types</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Treatment%20Information.aspx#treatment-methods" target="_blank">Treatment Methods</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Treatment%20Information.aspx#buffer-zones" target="_blank">Buffer Zones</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Treatment%20Information.aspx#treatment-by-pest-management-services" target="_blank">Treatment by Pest Management Services</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Treatment%20Information.aspx#faq" target="_blank">FAQ</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- How to Use -->
+    <a class="standalone-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Treatment%20Information.aspx#how-to-use-treatment-1" target="_blank">
+      <span class="icon">📖</span> How to Use Treatment
+    </a>
+
+    <!-- Treatment Safety -->
+    <div class="section">
+      <div class="section-header" onclick="toggleSection(this)">
+        <span class="section-title"><span class="icon">⚠️</span>Treatment Safety</span>
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="section-body">
+        <div class="link-group">
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Treatment%20Information.aspx#poison-apvma-information" target="_blank">Poison &amp; APVMA Information</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Treatment%20Information.aspx#safety-data-sheets-%28sds%29" target="_blank">Safety Data Sheets (SDS)</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Treatment%20Information.aspx#human-and-animal-impacts" target="_blank">Human and Animal Impacts</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Approved Wording -->
+    <div class="section">
+      <div class="section-header" onclick="toggleSection(this)">
+        <span class="section-title"><span class="icon">✍️</span>Approved Wording for External Use</span>
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="section-body">
+        <div class="link-group">
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Treatment%20Information.aspx#treatment-information" target="_blank">Treatment Information</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Treatment%20Information.aspx#safety-information" target="_blank">Safety Information</a>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /tab-treatment -->
+
+  <!-- ===== TAB: COMPLAINTS ===== -->
+  <div id="tab-complaints" class="tab-panel">
+
+    <!-- Awareness -->
+    <div class="section">
+      <div class="section-header" onclick="toggleSection(this)">
+        <span class="section-title"><span class="icon">🔔</span>Awareness</span>
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="section-body">
+        <div class="link-group">
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Escalation%20%26%20Complaints%20Breakdown.aspx#economic-impacts" target="_blank">Economic Impacts</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Escalation%20%26%20Complaints%20Breakdown.aspx#environmental-impacts" target="_blank">Environmental Impacts</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Escalation%20%26%20Complaints%20Breakdown.aspx#health-impacts" target="_blank">Health Impacts</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Concerns -->
+    <div class="section">
+      <div class="section-header" onclick="toggleSection(this)">
+        <span class="section-title"><span class="icon">💬</span>Concerns</span>
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="section-body">
+        <div class="link-grid">
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Escalation%20%26%20Complaints%20Breakdown.aspx#why-does-my-property-need-treatment-if-i-don-t-see-fire-ants" target="_blank">Why does my property need treatment?</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Escalation%20%26%20Complaints%20Breakdown.aspx#why-are-multiple-treatments-required" target="_blank">Why are multiple treatments required?</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Escalation%20%26%20Complaints%20Breakdown.aspx#how-will-my-property-be-treated" target="_blank">How will my property be treated?</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Escalation%20%26%20Complaints%20Breakdown.aspx#what-treatment-is-used" target="_blank">What treatment is used?</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Escalation%20%26%20Complaints%20Breakdown.aspx#how-much-treatment-is-applied" target="_blank">How much treatment is applied?</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Escalation%20%26%20Complaints%20Breakdown.aspx#when-does-treatment-happen" target="_blank">When does treatment happen?</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Escalation%20%26%20Complaints%20Breakdown.aspx#how-does-treatment-work" target="_blank">How does treatment work?</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Escalation%20%26%20Complaints%20Breakdown.aspx#how-long-does-the-treatment-remain-active" target="_blank">How long does treatment remain active?</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Escalation%20%26%20Complaints%20Breakdown.aspx#who-conducts-the-treatment" target="_blank">Who conducts the treatment?</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Resistance -->
+    <div class="section">
+      <div class="section-header" onclick="toggleSection(this)">
+        <span class="section-title"><span class="icon">🚧</span>Resistance — Chemical Sensitivity &amp; Obstructions</span>
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="section-body">
+        <div class="link-grid">
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Escalation%20%26%20Complaints%20Breakdown.aspx#resistance-chemical-sensitivity" target="_blank">Resistance — Chemical Sensitivity</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Escalation%20%26%20Complaints%20Breakdown.aspx#bees" target="_blank">Bees</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Escalation%20%26%20Complaints%20Breakdown.aspx#no-fire-ants-on-property" target="_blank">No Fire Ants on Property</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Escalation%20%26%20Complaints%20Breakdown.aspx#preventative-prophylactic-treatment-concerns" target="_blank">Preventative / Prophylactic Treatment Concerns</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Escalation%20%26%20Complaints%20Breakdown.aspx#safety-concerns" target="_blank">Safety Concerns</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Escalation%20%26%20Complaints%20Breakdown.aspx#surveillance-only-treatment" target="_blank">Surveillance Only Treatment</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Escalation%20%26%20Complaints%20Breakdown.aspx#treatment-active-period" target="_blank">Treatment Active Period</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Escalation%20%26%20Complaints%20Breakdown.aspx#resistance-obstructions" target="_blank">Resistance — Obstructions</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Escalation%20%26%20Complaints%20Breakdown.aspx#aerial-treatment-concerns" target="_blank">Aerial Treatment Concerns</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Escalation%20%26%20Complaints%20Breakdown.aspx#biosecurity-officers-power-of-entry" target="_blank">Biosecurity Officers / Power of Entry</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Escalation%20%26%20Complaints%20Breakdown.aspx#exemptions" target="_blank">Exemptions</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Escalation%20%26%20Complaints%20Breakdown.aspx#human-and-access-rights" target="_blank">Human and Access Rights</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Escalation%20%26%20Complaints%20Breakdown.aspx#legislative-resistance" target="_blank">Legislative Resistance</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Escalation%20%26%20Complaints%20Breakdown.aspx#rti-submissions" target="_blank">Further Enquiries — RTI Submissions</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Frequent Links -->
+    <div class="section">
+      <div class="section-header" onclick="toggleSection(this)">
+        <span class="section-title"><span class="icon">🔗</span>Frequent Links</span>
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="section-body">
+        <div class="link-group">
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/Community%20Engagement/Projects/Eradication%20Support%20Team/KAPS%20SharePoint/Complaints%20and%20Obstruction/ECT%2016042026.pdf?web=1" target="_blank">Escalation Complaints Triaging (ECT)</a>
+          <a class="nav-link" href="https://itpqld-my.sharepoint.com/personal/blair_spedding_daf_qld_gov_au/Documents/EST%20Sharepoint%20page%20materials/Threatening%20call%20checklist.pdf?web=1" target="_blank">Threat Checklist</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Common Complaints -->
+    <div class="section">
+      <div class="section-header" onclick="toggleSection(this)">
+        <span class="section-title"><span class="icon">📝</span>Common Complaints</span>
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="section-body">
+        <div class="link-grid">
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Escalations%20%26%20Complaints.aspx#anti-program-enquiries" target="_blank">Anti-Program Enquiries</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Escalations%20%26%20Complaints.aspx#scam-scripting" target="_blank">Scam Scripting</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Escalations%20%26%20Complaints.aspx#unpaid-invoices" target="_blank">Unpaid Invoices</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Escalations%20%26%20Complaints.aspx#freedom-of-information-%28foi%29-right-to-information-%28rti%29" target="_blank">FOI / Right to Information (RTI)</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Escalations%20%26%20Complaints.aspx#privacy-breach-management" target="_blank">Privacy Breach Management</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Escalations%20%26%20Complaints.aspx#national-relay-service-%28nrc%29" target="_blank">National Relay Services (NRS)</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Escalations%20%26%20Complaints.aspx#media" target="_blank">Media</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Escalations%20%26%20Complaints.aspx#customer-advocacy" target="_blank">Customer Advocacy</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Escalations%20%26%20Complaints.aspx#team-behaviour-complaints" target="_blank">Team Behaviour Complaints</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Escalations%20%26%20Complaints.aspx#suspect-non-treatment" target="_blank">Suspect Non-Treatment</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Compliance -->
+    <div class="section">
+      <div class="section-header" onclick="toggleSection(this)">
+        <span class="section-title"><span class="icon">⚖️</span>Compliance and Enforcement</span>
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="section-body">
+        <div class="link-group">
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST%20KAPS%20Escalations%20%26%20Complaints.aspx#queensland-police-service-%28qps%29-accompanied-enforced-treatment-runs" target="_blank">Enforcement Runs (QPS Accompanied)</a>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /tab-complaints -->
+
+  <!-- ===== TAB: PROCESSES ===== -->
+  <div id="tab-processes" class="tab-panel">
+
+    <!-- Aerial -->
+    <div class="section">
+      <div class="section-header" onclick="toggleSection(this)">
+        <span class="section-title"><span class="icon">✈️</span>Aerial Processes</span>
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="section-body">
+        <div class="link-group">
+          <a class="nav-link" href="https://itpqld.sharepoint.com/:u:/r/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST-KAPS%20Processes.aspx?csf=1&web=1&e=jMwQjY#aerial-updates" target="_blank">Aerial Updates</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/:u:/r/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST-KAPS%20Processes.aspx?csf=1&web=1&e=jMwQjY#contacting-aerial" target="_blank">Contacting Aerial</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/:u:/r/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST-KAPS%20Processes.aspx?csf=1&web=1&e=jMwQjY#aerial-faq-s" target="_blank">Aerial FAQs</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/:u:/r/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST-KAPS%20Processes.aspx?csf=1&web=1&e=jMwQjY#aerial-flight-rules" target="_blank">Aerial Flight Rules</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/:u:/r/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST-KAPS%20Processes.aspx?csf=1&web=1&e=jMwQjY#aerial" target="_blank">Aerial General</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- FAST -->
+    <div class="section">
+      <div class="section-header" onclick="toggleSection(this)">
+        <span class="section-title"><span class="icon">🔥</span>FAST (Fire Ant Suppression Taskforce) Processes</span>
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="section-body">
+        <div class="link-grid">
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST-KAPS%20Processes.aspx?csf=1&web=1&e=jMwQjY&CID=4c3b8208-1171-4484-bfeb-bd28c47419db#fast-latest-updates" target="_blank">FAST — Latest Updates</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST-KAPS%20Processes.aspx?csf=1&web=1&e=jMwQjY&CID=4c3b8208-1171-4484-bfeb-bd28c47419db#faq" target="_blank">FAQ — Frequently Asked Questions</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST-KAPS%20Processes.aspx?csf=1&web=1&e=jMwQjY&CID=4c3b8208-1171-4484-bfeb-bd28c47419db#new-ssc-process" target="_blank">NEW SSC Process</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST-KAPS%20Processes.aspx?csf=1&web=1&e=jMwQjY&CID=4c3b8208-1171-4484-bfeb-bd28c47419db#fast-aerial-suppression-treatment" target="_blank">Aerial Suppression Treatment</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST-KAPS%20Processes.aspx?csf=1&web=1&e=jMwQjY&CID=4c3b8208-1171-4484-bfeb-bd28c47419db#fast-schools-and-rtt-government" target="_blank">Schools and RTT / Government</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST-KAPS%20Processes.aspx?csf=1&web=1&e=jMwQjY&CID=4c3b8208-1171-4484-bfeb-bd28c47419db#fast-critical-sting-process-vulnerable-dni-bookings" target="_blank">Critical Sting Process &amp; Vulnerable DNI Bookings</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST-KAPS%20Processes.aspx?csf=1&web=1&e=jMwQjY&CID=4c3b8208-1171-4484-bfeb-bd28c47419db#fast-primary-producers" target="_blank">Primary Producers</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST-KAPS%20Processes.aspx?csf=1&web=1&e=jMwQjY&CID=4c3b8208-1171-4484-bfeb-bd28c47419db#fast-cst-%28community-self-treatment-yard-treatment%29" target="_blank">CST (Community Self Treatment / Yard Treatment)</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Operations -->
+    <div class="section">
+      <div class="section-header" onclick="toggleSection(this)">
+        <span class="section-title"><span class="icon">🗺️</span>Operations Processes</span>
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="section-body">
+        <div class="link-group">
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST-KAPS%20Processes.aspx?csf=1&web=1&e=YxSW0O&CID=d34f5e4c-621f-4d70-811d-eb4628ef4159#operations-updates" target="_blank">Operations Updates</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST-KAPS%20Processes.aspx?csf=1&web=1&e=jMwQjY&CID=4c3b8208-1171-4484-bfeb-bd28c47419db#notices" target="_blank">Notices</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST-KAPS%20Processes.aspx?csf=1&web=1&e=jMwQjY&CID=4c3b8208-1171-4484-bfeb-bd28c47419db#how-we-notify-of-treatment" target="_blank">How We Notify of Treatment</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST-KAPS%20Processes.aspx?csf=1&web=1&e=jMwQjY&CID=4c3b8208-1171-4484-bfeb-bd28c47419db#checking-schedules-for-treatment" target="_blank">Check Schedule for Treatment</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST-KAPS%20Processes.aspx?csf=1&web=1&e=jMwQjY&CID=4c3b8208-1171-4484-bfeb-bd28c47419db#no-treatment-required-%28ntr%29" target="_blank">No Treatment Required (NTR)</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- DOI -->
+    <div class="section">
+      <div class="section-header" onclick="toggleSection(this)">
+        <span class="section-title"><span class="icon">🔍</span>DOI (Detection of Importance) Processes</span>
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="section-body">
+        <div class="link-group">
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST-KAPS%20Processes.aspx?csf=1&web=1&e=YxSW0O&CID=d34f5e4c-621f-4d70-811d-eb4628ef4159#doi-updates" target="_blank">DOI Updates</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST-KAPS%20Processes.aspx?csf=1&web=1&e=jMwQjY&CID=4c3b8208-1171-4484-bfeb-bd28c47419db#detection-of-importance-%28doi%29-polygyne-risk-zone-%28prz%29" target="_blank">Detection of Interest (DOI), Polygyne (PRZ)</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST-KAPS%20Processes.aspx?csf=1&web=1&e=jMwQjY&CID=4c3b8208-1171-4484-bfeb-bd28c47419db#checking-for-detection-of-importance-%28doi%29" target="_blank">Checking for Detection of Importance (DOI)</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST-KAPS%20Processes.aspx?csf=1&web=1&e=jMwQjY&CID=4c3b8208-1171-4484-bfeb-bd28c47419db#doi-outlier-detections" target="_blank">DOI Outlier Detections</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST-KAPS%20Processes.aspx?csf=1&web=1&e=jMwQjY&CID=4c3b8208-1171-4484-bfeb-bd28c47419db#outside-suppression-zone-electric-ants" target="_blank">Outside Suppression Zone &amp; Electric Ants</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Material Movement -->
+    <div class="section">
+      <div class="section-header" onclick="toggleSection(this)">
+        <span class="section-title"><span class="icon">🚚</span>Material Movement</span>
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="section-body">
+        <div class="link-grid">
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST-KAPS%20Processes.aspx?csf=1&web=1&e=YxSW0O&CID=d34f5e4c-621f-4d70-811d-eb4628ef4159#material-movement-updates" target="_blank">Material Movement Updates</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/:u:/r/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST-KAPS%20Processes.aspx?csf=1&web=1&e=jMwQjY#suspect-illegal-movement-report" target="_blank">Suspect Illegal Movement Report</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/:u:/r/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST-KAPS%20Processes.aspx?csf=1&web=1&e=jMwQjY#business-compliance-audit-request" target="_blank">Business Compliance / Audit Request</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/:u:/r/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST-KAPS%20Processes.aspx?csf=1&web=1&e=jMwQjY#general-biosecurity-obligation" target="_blank">General Biosecurity Obligation</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/:u:/r/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST-KAPS%20Processes.aspx?csf=1&web=1&e=jMwQjY#biosecurity-zones" target="_blank">Biosecurity Zones</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/:u:/r/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST-KAPS%20Processes.aspx?csf=1&web=1&e=jMwQjY#biosecurity-instrument-permit-%28bip%29" target="_blank">Biosecurity Instrument Permit (BIP)</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/:u:/r/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST-KAPS%20Processes.aspx?csf=1&web=1&e=jMwQjY#movement-controls" target="_blank">Movement Controls</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Comms/Engagement -->
+    <div class="section">
+      <div class="section-header" onclick="toggleSection(this)">
+        <span class="section-title"><span class="icon">📣</span>Communications / Engagement</span>
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="section-body">
+        <div class="link-group">
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST-KAPS%20Processes.aspx?csf=1&web=1&e=YxSW0O&CID=d34f5e4c-621f-4d70-811d-eb4628ef4159#engagement-request-processes" target="_blank">Engagement Request Processes</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST-KAPS%20Processes.aspx?csf=1&web=1&e=jMwQjY&CID=4c3b8208-1171-4484-bfeb-bd28c47419db#workplace-training-certificates" target="_blank">Workplace Training / Certificates</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST-KAPS%20Processes.aspx?csf=1&web=1&e=jMwQjY&CID=4c3b8208-1171-4484-bfeb-bd28c47419db#vms-signage" target="_blank">VMS Signage</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Templates -->
+    <div class="section">
+      <div class="section-header" onclick="toggleSection(this)">
+        <span class="section-title"><span class="icon">🗂️</span>Templates</span>
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="section-body">
+        <div class="link-group">
+          <a class="nav-link" href="https://itpqld.sharepoint.com/:u:/r/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST-KAPS%20Processes.aspx?csf=1&web=1&e=jMwQjY#comment-templates" target="_blank">Comments Templates</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/:u:/r/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST-KAPS%20Processes.aspx?csf=1&web=1&e=jMwQjY#external-use-templates" target="_blank">External Use Templates</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/:u:/r/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST-KAPS%20Processes.aspx?csf=1&web=1&e=jMwQjY#field-team-documentation" target="_blank">Field Team Documentation</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Personal Admin -->
+    <div class="section">
+      <div class="section-header" onclick="toggleSection(this)">
+        <span class="section-title"><span class="icon">👤</span>Personal Admin</span>
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="section-body">
+        <div class="link-group">
+          <a class="nav-link" href="https://itpqld.sharepoint.com/:u:/r/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST-KAPS%20Processes.aspx?csf=1&web=1&e=jMwQjY#personal-admin-1" target="_blank">Human Resources Links</a>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /tab-processes -->
+
+  <!-- ===== TAB: WORKBOOKS ===== -->
+  <div id="tab-workbooks" class="tab-panel">
+    <div class="section">
+      <div class="section-header" onclick="toggleSection(this)">
+        <span class="section-title"><span class="icon">📚</span>EST Workbooks</span>
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="section-body">
+        <div class="link-group">
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST-KAPS%20-%20Workbooks.aspx" target="_blank">EST Team Workbooks</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST-KAPS%20-%20Workbooks.aspx" target="_blank">EST Admin Workbooks</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST-KAPS%20-%20Workbooks.aspx" target="_blank">EST Other Workbooks</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST-KAPS%20-%20Workbooks.aspx" target="_blank">EST FAST Tools</a>
+          <a class="nav-link" href="https://itpqld.sharepoint.com/sites/SPOBQ/Teams/NRIFAEP/SitePages/EST-KAPS%20-%20Workbooks.aspx#workbook-use" target="_blank">Workbook Use</a>
+        </div>
+      </div>
+    </div>
+  </div><!-- /tab-workbooks -->
+
+</div><!-- /widget -->
+
+<script>
+  function switchTab(id, btn) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + id).classList.add('active');
+    btn.classList.add('active');
+  }
+
+  function toggleSection(header) {
+    const section = header.closest('.section');
+    section.classList.toggle('open');
+  }
+</script>
+</body>
+</html>
